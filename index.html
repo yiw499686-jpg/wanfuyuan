@@ -1,1 +1,88 @@
-<h1>Hello World! 这是我的个人网站。</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的 321 空间</title>
+    <style>
+        :root { --primary: #7eb5a6; --bg: #f8f9fa; --card: #ffffff; }
+        body { font-family: "PingFang SC", sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary); font-weight: 300; }
+        
+        /* 布局卡片 */
+        .card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin-top: 0; }
+        
+        textarea, input { width: 100%; border: 1px solid #eee; border-radius: 8px; padding: 10px; box-sizing: border-box; margin-top: 10px; outline: none; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        
+        /* 四个板块的微调 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✨ 个人成长空间</h1>
+
+    <div class="card">
+        <h3>📓 321 日记法</h3>
+        <p><small>3 准备做的事 | 2 件开心的事 | 1 件反思的事</small></p >
+        <textarea id="diary321" rows="5" placeholder="今天的内容..."></textarea>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>📅 当日计划</h3>
+            <textarea id="todo" rows="5" placeholder="1. 跑步&#10;2. 阅读..."></textarea>
+        </div>
+
+        <div class="card">
+            <h3>💰 简易记账</h3>
+            <input type="number" id="money" placeholder="金额 (元)">
+            <input type="text" id="moneyDesc" placeholder="备注 (如：午饭)">
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>✍️ 灵感随笔</h3>
+        <textarea id="notes" rows="4" placeholder="随时记录冒出来的点子..."></textarea>
+    </div>
+
+    <button onclick="saveData()">保存今日内容</button>
+    <p id="status" style="text-align: center; color: var(--primary);"></p >
+</div>
+
+<script>
+    // 简单的保存逻辑：存到浏览器本地
+    function saveData() {
+        const data = {
+            diary: document.getElementById('diary321').value,
+            todo: document.getElementById('todo').value,
+            money: document.getElementById('money').value,
+            moneyDesc: document.getElementById('moneyDesc').value,
+            notes: document.getElementById('notes').value,
+            date: new Date().toLocaleDateString()
+        };
+        localStorage.setItem('myAppData', JSON.stringify(data));
+        document.getElementById('status').innerText = "✅ 已本地保存 (" + data.date + ")";
+    }
+
+    // 页面加载时自动读取
+    window.onload = function() {
+        const saved = localStorage.getItem('myAppData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            document.getElementById('diary321').value = data.diary || '';
+            document.getElementById('todo').value = data.todo || '';
+            document.getElementById('money').value = data.money || '';
+            document.getElementById('moneyDesc').value = data.moneyDesc || '';
+            document.getElementById('notes').value = data.notes || '';
+        }
+    }
+</script>
+
+</body>
+</html>
