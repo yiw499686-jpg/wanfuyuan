@@ -1,88 +1,797 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 321 空间</title>
-    <style>
-        :root { --primary: #7eb5a6; --bg: #f8f9fa; --card: #ffffff; }
-        body { font-family: "PingFang SC", sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { text-align: center; color: var(--primary); font-weight: 300; }
-        
-        /* 布局卡片 */
-        .card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin-top: 0; }
-        
-        textarea, input { width: 100%; border: 1px solid #eee; border-radius: 8px; padding: 10px; box-sizing: border-box; margin-top: 10px; outline: none; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        
-        /* 四个板块的微调 */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>321 日记法</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --orange: #F97316;
+  --orange-light: #FED7AA;
+  --orange-bg: #FFF7ED;
+  --bg: #F5F0EB;
+  --card: #FFFFFF;
+  --text: #1C1917;
+  --muted: #9CA3AF;
+  --border: #E7E0D8;
+  --green: #22C55E;
+  --red: #EF4444;
+  --nav-h: 72px;
+}
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+      min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── PAGES ── */
+.page { display: none; padding: 0 0 calc(var(--nav-h) + 16px) 0; min-height: 100vh; animation: fadeIn 0.22s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  padding: 52px 20px 20px;
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 10;
+}
+.page-header h1 { font-size: 1.35rem; font-weight: 700; }
+.page-header p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+/* ── HOME DATE BAR ── */
+.home-header {
+  background: var(--bg);
+  padding: 52px 20px 16px;
+  position: sticky; top: 0; z-index: 10;
+}
+.home-date { font-size: 0.8rem; color: var(--muted); }
+.home-title { font-size: 1.4rem; font-weight: 700; margin-top: 2px; }
+.date-nav { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.date-nav button {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: white;
+  font-size: 1rem; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.date-nav button:active { background: var(--orange); color: white; border-color: var(--orange); }
+.date-nav .cur-date { font-size: 0.85rem; font-weight: 500; flex: 1; }
+.today-chip {
+  font-size: 0.72rem; padding: 3px 10px; border-radius: 20px;
+  background: var(--orange-light); color: var(--orange); cursor: pointer; font-weight: 500;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  margin: 0 16px 14px;
+  padding: 18px 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.card-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.95rem; font-weight: 600; margin-bottom: 14px;
+}
+.card-title .icon { font-size: 1.1rem; }
+
+/* ── INPUT FIELDS ── */
+.field-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.field-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+  resize: none;
+}
+.field-input:focus { border-color: var(--orange); }
+.field-input::placeholder { color: #C4B5A5; }
+input.field-input { height: 46px; }
+   /* ── SAVE BUTTON ── */
+.save-btn {
+  display: block; width: calc(100% - 32px); margin: 4px 16px 0;
+  background: var(--orange); color: white;
+  border: none; border-radius: 14px;
+  padding: 15px; font-size: 1rem; font-weight: 600;
+  cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+  transition: all 0.15s; letter-spacing: 0.5px;
+}
+.save-btn:active { background: #EA6B0A; transform: scale(0.98); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  height: var(--nav-h);
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: flex-start; padding-top: 8px;
+  z-index: 100;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; cursor: pointer; padding: 6px 0;
+  transition: color 0.15s;
+  color: var(--muted);
+}
+.nav-item.active { color: var(--orange); }
+.nav-icon { font-size: 1.3rem; line-height: 1; }
+.nav-label { font-size: 0.65rem; font-weight: 500; }
+
+/* ── SECTION NUMS ── */
+.num-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--orange); color: white;
+  font-size: 0.95rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── CALENDAR ── */
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 4px; margin-bottom: 16px;
+}
+.cal-header h2 { font-size: 1.05rem; font-weight: 700; }
+.cal-header button {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: #f5f0eb;
+  font-size: 1.1rem; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+.cal-weekdays span {
+  text-align: center; font-size: 0.72rem; color: var(--muted);
+  font-weight: 500; padding: 4px 0;
+}
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day {
+  aspect-ratio: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 0.88rem; cursor: pointer;
+  position: relative; transition: all 0.15s;
+}
+.cal-day.empty { cursor: default; }
+.cal-day:not(.empty):active { background: var(--orange-light); }
+.cal-day.today {
+  background: white; border: 2px solid var(--orange);
+  color: var(--orange); font-weight: 700;
+}
+.cal-day.has-entry::after {
+  content: ''; position: absolute; bottom: 3px;
+  width: 14px; height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8' fill='%2322C55E'/%3E%3Ctext x='10' y='14' text-anchor='middle' font-size='10' fill='white'%3E😊%3C/text%3E%3C/svg%3E") center/contain no-repeat;
+}
+.cal-day.selected { background: var(--orange); color: white; font-weight: 700; }
+.cal-day.selected.has-entry::after { display: none; }
+
+/* small dot for has-entry */
+.cal-day.has-entry .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--orange); position: absolute; bottom: 2px;
+}
+.cal-day.today.has-entry .dot { background: var(--green); }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 16px 14px; }
+.stat-card {
+  background: white; border-radius: 16px; padding: 18px 16px;
+  text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.stat-num { font-size: 2.2rem; font-weight: 700; color: var(--orange); line-height: 1; }
+.stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+/* bar chart */
+.bar-chart { padding: 8px 0 4px; }
+.bar-row { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-bottom: 6px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.bar-fill { width: 100%; border-radius: 4px 4px 0 0; background: var(--orange); min-height: 2px; transition: height 0.4s ease; }
+.bar-month { font-size: 0.65rem; color: var(--muted); }
+
+/* keywords */
+.kw-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.kw-tag {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 0.78rem; color: var(--text);
+}
+
+/* ── LEDGER ── */
+.ledger-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 16px 14px; }
+.ledger-card { background: white; border-radius: 14px; padding: 14px; text-align: center; box-shadow: 0 1px 5px rgba(0,0,0,0.06); }
+.ledger-card .lc-label { font-size: 0.72rem; color: var(--muted); }
+.ledger-card .lc-amt { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+.lc-amt.inc { color: var(--green); }
+.lc-amt.exp { color: var(--red); }
+.lc-amt.bal { color: var(--text); }
+
+.type-switch { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+.type-btn {
+  flex: 1; padding: 8px; border-radius: 8px; border: none; cursor: pointer;
+  font-size: 0.85rem; font-weight: 500; font-family: 'Noto Sans SC', sans-serif;
+  background: transparent; color: var(--muted); transition: all 0.15s;
+}
+.type-btn.active.exp { background: var(--red); color: white; }
+.type-btn.active.inc { background: var(--green); color: white; }
+
+.form-row { display: flex; gap: 8px; }
+.form-row .field-input { margin-bottom: 0; }
+
+.ledger-items { }
+.ledger-item {
+  display: flex; align-items: center; padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ledger-item:last-child { border-bottom: none; }
+.li-cat {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--orange-bg); display: flex; align-items: center;
+  justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.li-info { flex: 1; padding: 0 10px; }
+.li-desc { font-size: 0.88rem; font-weight: 500; }
+.li-cat-name { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+.li-amt { font-size: 1rem; font-weight: 600; }
+.li-amt.inc { color: var(--green); }
+.li-amt.exp { color: var(--red); }
+.li-del { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--border); padding: 4px 6px; border-radius: 6px; }
+.li-del:active { color: var(--red); background: #fde8e8; }
+
+.empty-tip { text-align: center; padding: 30px 0; color: var(--muted); font-size: 0.85rem; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(var(--nav-h) + 16px); left: 50%; transform: translateX(-50%);
+  background: #1C1917; color: white;
+  padding: 10px 22px; border-radius: 24px;
+  font-size: 0.85rem; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s; z-index: 999; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ── PLAN ── */
+.plan-progress { height: 8px; background: var(--border); border-radius: 4px; margin-bottom: 14px; overflow: hidden; }
+.plan-progress-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.4s; }
+.plan-pct { font-size: 0.75rem; color: var(--muted); text-align: right; margin-top: 4px; margin-bottom: 12px; }
+
+.task-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px dashed var(--border);
+}
+.task-item:last-child { border-bottom: none; }
+.task-check {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+  flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.15s; margin-top: 2px;
+}
+.task-check.done { background: var(--green); border-color: var(--green); color: white; }
+.task-txt {
+  flex: 1; font-size: 0.9rem; line-height: 1.5;
+  border: none; background: transparent; outline: none;
+  font-family: 'Noto Sans SC', sans-serif; color: var(--text);
+}
+.task-txt.done { text-decoration: line-through; color: var(--muted); }
+.task-del { background: none; border: none; cursor: pointer; color: var(--border); font-size: 0.95rem; padding: 2px 5px; border-radius: 4px; }
+.task-del:active { color: var(--red); }
+
+.add-task-row { display: flex; gap: 8px; margin-top: 10px; }
+.add-task-input {
+  flex: 1; border: 1.5px dashed var(--border); border-radius: 10px;
+  padding: 9px 12px; font-size: 0.88rem; background: var(--bg);
+  font-family: 'Noto Sans SC', sans-serif; outline: none;
+}
+.add-task-input:focus { border-color: var(--orange); border-style: solid; }
+.add-task-btn {
+  background: var(--text); color: white; border: none; border-radius: 10px;
+  width: 38px; font-size: 1.3rem; cursor: pointer;
+}
+.add-task-btn:active { background: var(--orange); }
+
+.priority-label {
+  font-size: 0.72rem; padding: 2px 8px; border-radius: 20px;
+  font-weight: 600; flex-shrink: 0; margin-top: 4px;
+}
+.p-h { background: #fee2e2; color: var(--red); }
+.p-m { background: #fef3c7; color: #D97706; }
+.p-l { background: #dcfce7; color: #16A34A; }
+
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>✨ 个人成长空间</h1>
-
-    <div class="card">
-        <h3>📓 321 日记法</h3>
-        <p><small>3 准备做的事 | 2 件开心的事 | 1 件反思的事</small></p >
-        <textarea id="diary321" rows="5" placeholder="今天的内容..."></textarea>
+<!-- ═══════════════════════════════════════ HOME ═══════ -->
+<div class="page active" id="page-home">
+  <div class="home-header">
+    <div class="home-date" id="homeWeekday"></div>
+    <div class="home-title">📓 321 日记法</div>
+    <div class="date-nav">
+      <button onclick="changeDay(-1)">‹</button>
+      <span class="cur-date" id="homeDate"></span>
+      <button onclick="changeDay(1)">›</button>
+      <span class="today-chip" onclick="goToday()">今天</span>
     </div>
-
-    <div class="grid">
-        <div class="card">
-            <h3>📅 当日计划</h3>
-            <textarea id="todo" rows="5" placeholder="1. 跑步&#10;2. 阅读..."></textarea>
-        </div>
-
-        <div class="card">
-            <h3>💰 简易记账</h3>
-            <input type="number" id="money" placeholder="金额 (元)">
-            <input type="text" id="moneyDesc" placeholder="备注 (如：午饭)">
-        </div>
+  </div> 
+      <!-- 3件开心的事 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num-badge">3</span>
+      😊 3件开心的事
     </div>
+    <textarea class="field-input" id="h1" rows="2" placeholder="今天让你开心的第一件事…"></textarea>
+    <textarea class="field-input" id="h2" rows="2" placeholder="今天让你开心的第二件事…"></textarea>
+    <textarea class="field-input" id="h3" rows="2" placeholder="今天让你开心的第三件事…"></textarea>
+  </div>
 
-    <div class="card">
-        <h3>✍️ 灵感随笔</h3>
-        <textarea id="notes" rows="4" placeholder="随时记录冒出来的点子..."></textarea>
+  <!-- 2件可以进步的事 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num-badge" style="background:#6B7280">2</span>
+      💪 2件可以进步的事
     </div>
+    <textarea class="field-input" id="g1" rows="2" placeholder="今天可以做得更好的第一件事…"></textarea>
+    <textarea class="field-input" id="g2" rows="2" placeholder="今天可以做得更好的第二件事…"></textarea>
+  </div>
 
-    <button onclick="saveData()">保存今日内容</button>
-    <p id="status" style="text-align: center; color: var(--primary);"></p >
+  <!-- 今日发现 (optional) -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num-badge" style="background:#0EA5E9">🔍</span>
+      今日发现
+    </div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">今天发现了一个有趣的东西，想记录下来～（文章/视频/书/博客……）</div>
+    <textarea class="field-input" id="disc" rows="2" placeholder="今天发现了…"></textarea>
+  </div>
+
+  <!-- 1句自我肯定 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="num-badge" style="background:#F59E0B">1</span>
+      ⭐ 1句自我肯定
+    </div>
+    <textarea class="field-input" id="aff" rows="2" placeholder="我今天…很棒。"></textarea>
+  </div>
+
+  <button class="save-btn" onclick="saveDiary()">📝 保存今日记录</button>
+  <div style="height:8px"></div>
 </div>
 
+<!-- ═══════════════════════════════════════ CALENDAR ═══ -->
+<div class="page" id="page-cal">
+  <div class="page-header">
+    <h1>📅 日历</h1>
+    <p>查看你的打卡记录</p >
+  </div>
+  <div class="card">
+    <div class="cal-header">
+      <button onclick="calMonth(-1)">←</button>
+      <h2 id="calTitle"></h2>
+      <button onclick="calMonth(1)">→</button>
+    </div>
+    <div class="cal-weekdays">
+      <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <!-- selected day detail -->
+  <div class="card" id="calDetail" style="display:none">
+    <div class="card-title" id="calDetailTitle"></div>
+    <div id="calDetailBody" style="font-size:0.88rem;line-height:1.8;color:#444"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PLAN ════════ -->
+<div class="page" id="page-plan">
+  <div class="page-header">
+    <h1>✅ 当日计划</h1>
+    <p id="planDateLabel"></p >
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span style="font-size:1rem">🔴</span> 重要任务</div>
+    <div id="list-h" class="task-list"></div>
+    <div class="add-task-row">
+      <input class="add-task-input" id="inp-h" placeholder="新增重要任务…" onkeydown="if(event.key==='Enter')addTask('h')">
+      <button class="add-task-btn" onclick="addTask('h')">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span style="font-size:1rem">🟡</span> 一般任务</div>
+    <div id="list-m" class="task-list"></div>
+    <div class="add-task-row">
+      <input class="add-task-input" id="inp-m" placeholder="新增一般任务…" onkeydown="if(event.key==='Enter')addTask('m')">
+      <button class="add-task-btn" onclick="addTask('m')">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span style="font-size:1rem">🟢</span> 轻松任务</div>
+    <div id="list-l" class="task-list"></div>
+    <div class="add-task-row">
+      <input class="add-task-input" id="inp-l" placeholder="新增轻松任务…" onkeydown="if(event.key==='Enter')addTask('l')">
+      <button class="add-task-btn" onclick="addTask('l')">+</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:0.8rem;color:var(--muted)">完成进度</span>
+      <span id="planPct" style="font-size:0.8rem;font-weight:600;color:var(--orange)">0%</span>
+    </div>
+    <div class="plan-progress"><div class="plan-progress-fill" id="planBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ STATS ═══════ -->
+<div class="page" id="page-stats">
+  <div class="page-header">
+    <h1>📊 数据统计</h1>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num" id="statStreak">0</div>
+      <div class="stat-label">🔥 连续打卡</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">📝 总记录</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">每月完成情况</div>
+    <div class="bar-chart">
+      <div class="bar-row" id="barRow"></div>
+      <div id="barLabels" style="display:flex;gap:4px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">高频关键词</div>
+    <div class="kw-list" id="kwList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ LEDGER ══════ -->
+<div class="page" id="page-ledger">
+  <div class="page-header">
+    <h1>💰 记账</h1>
+    <p id="ledgerDateLabel"></p >
+  </div>
+  <div class="ledger-summary">
+    <div class="ledger-card">
+      <div class="lc-label">今日收入</div>
+      <div class="lc-amt inc" id="ledInc">¥0</div>
+    </div>
+    <div class="ledger-card">
+      <div class="lc-label">今日支出</div>
+      <div class="lc-amt exp" id="ledExp">¥0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="type-switch">
+      <button class="type-btn exp active" id="tbExp" onclick="setLedgerType('exp')">支出</button>
+      <button class="type-btn inc" id="tbInc" onclick="setLedgerType('inc')">收入</button>
+    </div>
+    <input class="field-input" id="ledDesc" placeholder="描述（例：午餐）">
+    <div class="form-row">
+      <input class="field-input" id="ledAmt" type="number" placeholder="金额" style="flex:1">
+      <select class="field-input" id="ledCat" style="flex:1">
+        <option value="🍜 饮食">🍜 饮食</option>
+        <option value="🚌 交通">🚌 交通</option>
+        <option value="🎮 娱乐">🎮 娱乐</option>
+        <option value="🛍️ 购物">🛍️ 购物</option>
+        <option value="💼 薪资">💼 薪资</option>
+        <option value="📌 其他">📌 其他</option>
+      </select>
+    </div>
+    <button class="save-btn" style="margin:10px 0 0;width:100%" onclick="addLedger()">＋ 新增记录</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今日明细</div>
+    <div id="ledgerItems"><div class="empty-tip">今天还没有记录</div></div>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="switchPage('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">首页</div>
+  </div>
+  <div class="nav-item" id="nav-cal" onclick="switchPage('cal')">
+    <div class="nav-icon">📅</div>
+    <div class="nav-label">日历</div>
+  </div>
+  <div class="nav-item" id="nav-plan" onclick="switchPage('plan')">
+    <div class="nav-icon">✅</div>
+    <div class="nav-label">计划</div>
+  </div>
+  <div class="nav-item" id="nav-ledger" onclick="switchPage('ledger')">
+    <div class="nav-icon">💰</div>
+    <div class="nav-label">记账</div>
+  </div>
+  <div class="nav-item" id="nav-stats" onclick="switchPage('stats')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">统计</div>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
 <script>
-    // 简单的保存逻辑：存到浏览器本地
-    function saveData() {
-        const data = {
-            diary: document.getElementById('diary321').value,
-            todo: document.getElementById('todo').value,
-            money: document.getElementById('money').value,
-            moneyDesc: document.getElementById('moneyDesc').value,
-            notes: document.getElementById('notes').value,
-            date: new Date().toLocaleDateString()
-        };
-        localStorage.setItem('myAppData', JSON.stringify(data));
-        document.getElementById('status').innerText = "✅ 已本地保存 (" + data.date + ")";
-    }
+// ════════════════════════════════ STATE ════════════════════
+let today = fmtDate(new Date());
+let curDate = today;
+let ledgerType = 'exp';
+let calYear, calMonth;
+{
+  const d = new Date();
+  calYear = d.getFullYear();
+  calMonth = d.getMonth();
+}
 
-    // 页面加载时自动读取
-    window.onload = function() {
-        const saved = localStorage.getItem('myAppData');
-        if (saved) {
-            const data = JSON.parse(saved);
-            document.getElementById('diary321').value = data.diary || '';
-            document.getElementById('todo').value = data.todo || '';
-            document.getElementById('money').value = data.money || '';
-            document.getElementById('moneyDesc').value = data.moneyDesc || '';
-            document.getElementById('notes').value = data.notes || '';
-        }
-    }
+// ════════════════════════════════ UTILS ════════════════════
+function fmtDate(d) { return d.toISOString().slice(0,10); }
+function parseDate(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(s,n) { const d=parseDate(s); d.setDate(d.getDate()+n); return fmtDate(d); }
+function fmt(n) { return '¥'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function key(type) { return `321_${type}_${curDate}`; }
+function loadKey(k) { try{return JSON.parse(localStorage.getItem(k));}catch{return null;} }
+function saveKey(k,v) { localStorage.setItem(k,JSON.stringify(v)); }
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+function weekdayStr(s) {
+  const d=parseDate(s);
+  return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+}
+function dateLabel(s) {
+  const d=parseDate(s);
+  return `${d.getMonth()+1}月${d.getDate()}日 ${weekdayStr(s)}`;
+}
+
+// ════════════════════════════════ PAGE NAV ═════════════════
+const PAGES = ['home','cal','plan','ledger','stats'];
+function switchPage(name) {
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('active',p===name);
+    document.getElementById('nav-'+p).classList.toggle('active',p===name);
+  });
+  if(name==='cal') renderCal();
+  if(name==='stats') renderStats();
+  if(name==='plan') { renderPlan(); document.getElementById('planDateLabel').textContent=dateLabel(curDate); }
+  if(name==='ledger') { renderLedger(); document.getElementById('ledgerDateLabel').textContent=dateLabel(curDate); }
+}
+
+// ════════════════════════════════ DATE ════════════════════
+function updateHomeHeader() {
+  const d=parseDate(curDate);
+  document.getElementById('homeWeekday').textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${weekdayStr(curDate)}`;
+  document.getElementById('homeDate').textContent=`${d.getMonth()+1}月${d.getDate()}日`;
+}
+function changeDay(n) { curDate=addDays(curDate,n); updateHomeHeader(); loadDiary(); }
+function goToday() { curDate=today; updateHomeHeader(); loadDiary(); }
+
+// ════════════════════════════════ DIARY ═══════════════════
+function loadDiary() {
+  const d = loadKey(key('diary')) || {};
+  ['h1','h2','h3','g1','g2','disc','aff'].forEach(id=>{
+    document.getElementById(id).value = d[id]||'';
+  });
+}
+function saveDiary() {
+  const d={};
+  ['h1','h2','h3','g1','g2','disc','aff'].forEach(id=>{
+    d[id]=document.getElementById(id).value.trim();
+  });
+  saveKey(key('diary'), d);
+  toast('✅ 今日记录已保存');
+}
+   // ════════════════════════════════ CALENDAR ════════════════
+function calMonth(n) {
+  calMonth+=n;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCal();
+}
+function renderCal() {
+  const months=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  document.getElementById('calTitle').textContent=`${calYear}年${calMonth+1}月`;
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===today;
+    const isSel=ds===curDate;
+    const hasEntry=!!loadKey(`321_diary_${ds}`);
+    let cls='cal-day';
+    if(isToday) cls+=' today';
+    if(isSel) cls+=' selected';
+    const dot=hasEntry?'<div class="dot"></div>':'';
+    html+=`<div class="${cls}" onclick="selectCalDay('${ds}')">${d}${dot}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function selectCalDay(ds) {
+  curDate=ds;
+  renderCal();
+  // show detail
+  const d=loadKey(`321_diary_${ds}`);
+  const det=document.getElementById('calDetail');
+  if(!d){det.style.display='none';return;}
+  det.style.display='block';
+  document.getElementById('calDetailTitle').textContent=`📖 ${dateLabel(ds)}`;
+  const lines=[];
+  if(d.h1||d.h2||d.h3){
+    lines.push('<b>😊 开心的事</b>');
+    [d.h1,d.h2,d.h3].filter(Boolean).forEach((v,i)=>lines.push(`${i+1}. ${esc(v)}`));
+  }
+  if(d.g1||d.g2){
+    lines.push('<br><b>💪 可以进步的事</b>');
+    [d.g1,d.g2].filter(Boolean).forEach((v,i)=>lines.push(`${i+1}. ${esc(v)}`));
+  }
+  if(d.aff) lines.push(`<br><b>⭐ 自我肯定</b><br>${esc(d.aff)}`);
+  document.getElementById('calDetailBody').innerHTML=lines.join('<br>');
+}
+
+// ════════════════════════════════ PLAN ════════════════════
+let planData = {h:[],m:[],l:[]};
+
+function loadPlan() { planData = loadKey(key('plan')) || {h:[],m:[],l:[]}; }
+function savePlan() { saveKey(key('plan'), planData); updatePlanProgress(); }
+function addTask(level) {
+  const inp=document.getElementById('inp-'+level);
+  const txt=inp.value.trim(); if(!txt) return;
+  planData[level].push({id:Date.now(),text:txt,done:false});
+  inp.value=''; renderPlan(); savePlan();
+}
+function toggleTask(level,id){
+  const it=planData[level].find(i=>i.id===id);
+  if(it){it.done=!it.done; renderPlan(); savePlan();}
+}
+function delTask(level,id){
+  planData[level]=planData[level].filter(i=>i.id!==id);
+  renderPlan(); savePlan();
+}
+function renderPlan(){
+  loadPlan();
+  ['h','m','l'].forEach(lv=>{
+    const el=document.getElementById('list-'+lv);
+    if(!planData[lv].length){el.innerHTML='<div class="empty-tip" style="padding:10px 0">暂无任务</div>';return;}
+    el.innerHTML=planData[lv].map(it=>`
+      <div class="task-item">
+        <div class="task-check ${it.done?'done':''}" onclick="toggleTask('${lv}',${it.id})">${it.done?'✓':''}</div>
+        <div class="task-txt ${it.done?'done':''}">${esc(it.text)}</div>
+        <button class="task-del" onclick="delTask('${lv}',${it.id})">×</button>
+      </div>`).join('');
+  });
+  updatePlanProgress();
+}
+function updatePlanProgress(){
+  const all=[...planData.h,...planData.m,...planData.l];
+  const done=all.filter(i=>i.done).length;
+  const pct=all.length?Math.round(done/all.length*100):0;
+  document.getElementById('planBar').style.width=pct+'%';
+  document.getElementById('planPct').textContent=pct+'%';
+}
+
+// ════════════════════════════════ LEDGER ══════════════════
+function setLedgerType(t){
+  ledgerType=t;
+  document.getElementById('tbExp').classList.toggle('active',t==='exp');
+  document.getElementById('tbInc').classList.toggle('active',t==='inc');
+}
+function loadLedger(){ return loadKey(key('ledger'))||[]; }
+function addLedger(){
+  const desc=document.getElementById('ledDesc').value.trim()||'未命名';
+  const amt=parseFloat(document.getElementById('ledAmt').value);
+  const cat=document.getElementById('ledCat').value;
+  if(!amt||isNaN(amt)||amt<=0){toast('⚠️ 请输入有效金额');return;}
+  const data=loadLedger();
+  data.push({id:Date.now(),type:ledgerType,desc,amt,cat});
+  saveKey(key('ledger'),data);
+  document.getElementById('ledDesc').value='';
+  document.getElementById('ledAmt').value='';
+  renderLedger(); toast('✅ 记录已添加');
+}
+function delLedger(id){
+  let data=loadLedger();
+  data=data.filter(i=>i.id!==id);
+  saveKey(key('ledger'),data); renderLedger();
+}
+function renderLedger(){
+  const data=loadLedger();
+  const inc=data.filter(i=>i.type==='inc').reduce((s,i)=>s+i.amt,0);
+  const exp=data.filter(i=>i.type==='exp').reduce((s,i)=>s+i.amt,0);
+  document.getElementById('ledInc').textContent=fmt(inc);
+  document.getElementById('ledExp').textContent=fmt(exp);
+  const el=document.getElementById('ledgerItems');
+  if(!data.length){el.innerHTML='<div class="empty-tip">今天还没有记录</div>';return;}
+  el.innerHTML=[...data].reverse().map(it=>`
+    <div class="ledger-item">
+      <div class="li-cat">${it.cat.split(' ')[0]}</div>
+      <div class="li-info">
+        <div class="li-desc">${esc(it.desc)}</div>
+        <div class="li-cat-name">${it.cat.split(' ').slice(1).join(' ')}</div>
+      </div>
+      <div class="li-amt ${it.type}">${it.type==='inc'?'+':'-'}${fmt(it.amt)}</div>
+      <button class="li-del" onclick="delLedger(${it.id})">×</button>
+    </div>`).join('');
+}
+
+// ════════════════════════════════ STATS ═══════════════════
+function renderStats(){
+  // collect all diary keys
+  const allKeys=Object.keys(localStorage).filter(k=>k.startsWith('321_diary_'));
+  document.getElementById('statTotal').textContent=allKeys.length;
+
+  // streak
+  let streak=0, d=today;
+  while(loadKey(`321_diary_${d}`)){streak++;d=addDays(d,-1);}
+  document.getElementById('statStreak').textContent=streak;
+
+  // monthly bar
+  const monthly={};
+  allKeys.forEach(k=>{
+    const ds=k.replace('321_diary_','');
+    const mo=ds.slice(0,7);
+    monthly[mo]=(monthly[mo]||0)+1;
+  });
+  const mos=Object.keys(monthly).sort().slice(-6);
+  const maxV=Math.max(1,...mos.map(m=>monthly[m]));
+  const barRow=document.getElementById('barRow');
+  const barLab=document.getElementById('barLabels');
+  barRow.innerHTML=mos.map(m=>{
+    const h=Math.round((monthly[m]/maxV)*72);
+    return `<div class="bar-col"><div class="bar-fill" style="height:${h}px"></div></div>`;
+  }).join('');
+  barLab.innerHTML=mos.map(m=>`<div class="bar-col"><span class="bar-month">${m.slice(5)}月</span></div>`).join('');
+  barLab.style.display='flex'; barLab.style.gap='4px';
+
+  // keywords
+  const freq={};
+  allKeys.forEach(k=>{
+    const d=loadKey(k)||{};
+    ['h1','h2','h3','g1','g2','aff'].forEach(f=>{
+      const v=(d[f]||'').trim();
+      if(v) freq[v]=(freq[v]||0)+1;
+    });
+  });
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  document.getElementById('kwList').innerHTML=sorted.length
+    ? sorted.map(([w,c])=>`<span class="kw-tag">${esc(w)} (${c})</span>`).join('')
+    : '<span style="color:var(--muted);font-size:0.85rem">写日记后会显示高频词</span>';
+}
+
+// ════════════════════════════════ INIT ════════════════════
+updateHomeHeader();
+loadDiary();
 </script>
-
 </body>
-</html>
+</html> 
